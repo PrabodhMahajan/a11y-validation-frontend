@@ -381,10 +381,21 @@ function SessionPage() {
       apiFetch(`/sessions/${id}`),
       apiFetch("/criteria"),
     ]).then(([s, c]) => {
-      setSession(s);
-      setCriteria(c.criteria);
-      setDisabilities(c.disabilities);
-      if (c.disabilities.length > 0) setSelectedDisability(c.disabilities[0].id);
+      // Normalize all fields so the rest of the component never needs null checks
+      setSession({
+        ...s,
+        humanConfirmed: s.humanConfirmed || [],
+        humanDisputed: s.humanDisputed || [],
+        humanAdded: s.humanAdded || [],
+        checklistResponses: s.checklistResponses || {},
+        participants: s.participants || [],
+        metrics: s.metrics || { X: 0, Y: 0, Z: 0, N: 0, falsePositiveRate: 0 },
+        automatedViolations: s.automatedViolations || [],
+        auditJson: s.auditJson || null,
+      });
+      setCriteria(c.criteria || []);
+      setDisabilities(c.disabilities || []);
+      if (c.disabilities && c.disabilities.length > 0) setSelectedDisability(c.disabilities[0].id);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [id]);
@@ -394,7 +405,16 @@ function SessionPage() {
     setSaving(true);
     try {
       const result = await apiFetch(`/sessions/${id}`, { method: "PATCH", body: patch });
-      setSession((s) => ({ ...s, ...patch, metrics: result.metrics }));
+      setSession((s) => ({
+        ...s,
+        ...patch,
+        metrics: result.metrics || s.metrics,
+        humanConfirmed: patch.humanConfirmed || s.humanConfirmed || [],
+        humanDisputed: patch.humanDisputed || s.humanDisputed || [],
+        humanAdded: patch.humanAdded || s.humanAdded || [],
+        checklistResponses: patch.checklistResponses || s.checklistResponses || {},
+        participants: patch.participants || s.participants || [],
+      }));
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {
@@ -408,7 +428,7 @@ function SessionPage() {
 
   function setChecklistStatus(criterionId, status, note = "") {
     const updated = {
-      ...( session.checklistResponses || {}),
+      ...session.checklistResponses,
       [criterionId]: {
         status,
         note,
@@ -473,7 +493,7 @@ function SessionPage() {
     ? criteria.filter((c) => c.disabilities.includes(selectedDisability))
     : criteria;
 
-  const metrics = session.metrics || { X: 0, Y: 0, Z: 0, N: 0, falsePositiveRate: 0 };
+  const metrics = session.metrics;
 
   return (
     <div>
@@ -551,9 +571,9 @@ function SessionPage() {
             <div className="card">
               <p className="eyebrow">Checklist progress</p>
               <p style={{ fontSize: 13 }}>
-                {Object.values(session.checklistResponses || {}).filter((r) => r.status === "fail").length} failures &nbsp;·&nbsp;
-                {Object.values(session.checklistResponses || {}).filter((r) => r.status === "pass").length} passes &nbsp;·&nbsp;
-                {Object.keys(session.checklistResponses || {}).length} of {criteria.length} criteria reviewed
+                {Object.values(session.checklistResponses).filter((r) => r.status === "fail").length} failures &nbsp;·&nbsp;
+                {Object.values(session.checklistResponses).filter((r) => r.status === "pass").length} passes &nbsp;·&nbsp;
+                {Object.keys(session.checklistResponses).length} of {criteria.length} criteria reviewed
               </p>
             </div>
 
@@ -600,7 +620,7 @@ function SessionPage() {
             </p>
 
             {filteredCriteria.map((c) => {
-              const response = (session.checklistResponses || {})[c.id];
+              const response = session.checklistResponses[c.id];
               const isOpen = openCriteria[c.id];
               return (
                 <div key={c.id} className="criterion-card">
