@@ -560,11 +560,11 @@ function SessionPage() {
             <div className="card" style={{ marginBottom: 16 }}>
               <p className="eyebrow">Accuracy formula</p>
               <div style={{ fontFamily: "ui-monospace, monospace", fontSize: 14, background: "#f0eee8", padding: "10px 14px", borderRadius: 8, margin: "8px 0" }}>
-                N% = X ÷ (Y + Z) = {metrics.X} ÷ ({metrics.Y} + {metrics.Z}) = {metrics.N}%
+                N% = X ÷ (X + Z) = {metrics.X} ÷ ({metrics.X} + {metrics.Z}) = {metrics.N}%
               </div>
               <p style={{ fontSize: 13, color: "var(--ink-soft)" }}>
                 Automated tools detected {metrics.X} violation instances. Human validation confirmed {metrics.Y} and found {metrics.Z} additional barriers.
-                Automation coverage: <strong>{metrics.N}%</strong> of real barriers. GDS benchmark: 40%.
+                Automation coverage: <strong>{metrics.N}%</strong> of real barriers (X ÷ (X+Z)). GDS benchmark: 40%.
               </p>
             </div>
 
