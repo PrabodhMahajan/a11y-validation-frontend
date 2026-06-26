@@ -581,6 +581,10 @@ function SessionPage() {
             <h2>WCAG checklist</h2>
             <p className="sub">Select a disability to filter criteria relevant to that user group. Click any criterion to see where it applies on this site and how to implement it.</p>
 
+            {criteria.length === 0 ? (
+              <div className="card"><p style={{ color: "var(--ink-soft)" }}>Loading criteria...</p></div>
+            ) : (
+              <>
             <div className="form-group" style={{ maxWidth: 360 }}>
               <label>Filter by disability (RPWD Act 2016)</label>
               <select value={selectedDisability} onChange={(e) => setSelectedDisability(e.target.value)}>
@@ -596,7 +600,7 @@ function SessionPage() {
             </p>
 
             {filteredCriteria.map((c) => {
-              const response = session.checklistResponses[c.id];
+              const response = (session.checklistResponses || {})[c.id];
               const isOpen = openCriteria[c.id];
               return (
                 <div key={c.id} className="criterion-card">
@@ -672,6 +676,8 @@ function SessionPage() {
                 </div>
               );
             })}
+              </>
+            )}
           </section>
         )}
 
