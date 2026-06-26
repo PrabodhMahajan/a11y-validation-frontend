@@ -408,7 +408,7 @@ function SessionPage() {
 
   function setChecklistStatus(criterionId, status, note = "") {
     const updated = {
-      ...session.checklistResponses,
+      ...( session.checklistResponses || {}),
       [criterionId]: {
         status,
         note,
@@ -473,7 +473,7 @@ function SessionPage() {
     ? criteria.filter((c) => c.disabilities.includes(selectedDisability))
     : criteria;
 
-  const { metrics } = session;
+  const metrics = session.metrics || { X: 0, Y: 0, Z: 0, N: 0, falsePositiveRate: 0 };
 
   return (
     <div>
@@ -551,9 +551,9 @@ function SessionPage() {
             <div className="card">
               <p className="eyebrow">Checklist progress</p>
               <p style={{ fontSize: 13 }}>
-                {Object.values(session.checklistResponses).filter((r) => r.status === "fail").length} failures &nbsp;·&nbsp;
-                {Object.values(session.checklistResponses).filter((r) => r.status === "pass").length} passes &nbsp;·&nbsp;
-                {Object.keys(session.checklistResponses).length} of {criteria.length} criteria reviewed
+                {Object.values(session.checklistResponses || {}).filter((r) => r.status === "fail").length} failures &nbsp;·&nbsp;
+                {Object.values(session.checklistResponses || {}).filter((r) => r.status === "pass").length} passes &nbsp;·&nbsp;
+                {Object.keys(session.checklistResponses || {}).length} of {criteria.length} criteria reviewed
               </p>
             </div>
 
